@@ -1,6 +1,8 @@
 var mongoose = require("mongoose");
 mongoose.connect(
-  "mongodb://helenjsoh:airbnb1@ds215502.mlab.com:15502/images",
+  "mongodb://localhost:27017/helensCarousel", 
+  // || 
+  // "mongodb://helenjsoh:airbnb1@ds215502.mlab.com:15502/images",
   { useNewUrlParser: true }
 );
 

@@ -24,78 +24,100 @@ const sampleStaticData = ['file:///Users/helenjsoh/Desktop/HS-images/CarouselPic
 'file:///Users/helenjsoh/Desktop/HS-images/CarouselPics/19.jpeg',
 'file:///Users/helenjsoh/Desktop/HS-images/CarouselPics/20.jpeg']
 
-const listingData = [];
-const imageData = [];
+let listingData = [];
+let imageData = [];
 
+let creationCounter = 0; 
+let adderNum = 150000;
+let max = 150000;
+let imageMax = 1000;
 // This fn will create 100 listing objs with an arr of 8-10 image objs
 const createMockData = () => {
+    listingData = [];
+    imageData = [];
     // This loop will create 100 listing objs
-    for (var i = 0; i < 100; i++) {
+    console.log('the counter and max are: ', creationCounter, max)
+    for (var i = creationCounter; i < max; i++) {
         let id = i;
-
         // This loop will generate 8-10 images objs for ea listing
         let randomNum = Math.floor(Math.random() * 3) + 8;
-
         let listing = {
             id: id,
             count: randomNum
         }
         listingData.push(listing);
-
-        for (var j = 0; j < randomNum; j++) {
-            let url = sampleStaticData[Math.floor(Math.random() * Math.floor(20))];
-            let caption = faker.lorem.sentence();
-            let imageObj = {
-                // Listing_id points to the listing it belongs to
-                listing_id: id,
-                image_url: url,
-                image_caption: caption,
-            }
-            imageData.push(imageObj);
-        };
     }
+    for(let i = 0; i < imageMax; i++){
+        let url = sampleStaticData[Math.floor(Math.random() * Math.floor(20))];
+        let caption = faker.lorem.sentence();
+        let imageObj = {
+            // Listing_id points to the listing it belongs to
+            listing_id: i,
+            image_url: url,
+            image_caption: caption,
+        }
+        imageData.push(imageObj);
+    }
+    creationCounter++;
 };
-
-createMockData();
-// console.log('Example of listingData', listingData[99]);
-// console.log('Example of imageData', imageData[99]);
+createMockData(creationCounter, max);
 
 
 // Run this function once to load the mockData into mongoDB.
 const loadListingCollection = () => {
-    for (var i = 0; i < listingData.length; i++) {
-        // console.log(listingData[i].id)
-        let data = new db.Listing({
-            id: listingData[i].id,
-            count: listingData[i].count
-        })
-        data.save((err, data) => {
+    let listingArray = [];
+    let data;
+
+    let adder = () => {
+        listingArray = [];
+        for (var i = 0; i < listingData.length; i++) {
+            // console.log(listingData[i].id)
+            data = new db.Listing({
+                id: listingData[i].id,
+                count: listingData[i].count
+            })
+            listingArray.push(data);
+        }
+        data.collection.insertMany(listingArray, (err, data) => {
             if (err) {
                 console.log('Could not save listing data', err);
+            } else if(creationCounter < 10000000){
+                // console.log('we can still do more. creationCounter is at', counter);
+                // console.log('verify creationCounter: ', creationCounter);
+                max += adderNum;
+                console.log('entered: ', creationCounter, ' data points so far!');
+                createMockData();
+                adder();
             } else {
-                console.log('Listing data has been saved.')
+                console.timeEnd('timer');
+                console.log('stopping');
             }
         })
     }
+    console.time('timer');
+    adder();
 };
-
 const loadImageCollection = () => {
+    let imageArray = [];
+    let data;
+
     for (var i = 0; i < imageData.length; i++) {
         // console.log(imageData[0].id)
-        let data = new db.Image({
+        data = new db.Image({
             id: imageData[i].listing_id,
             image_url: imageData[i].image_url,
             image_caption: imageData[i].image_caption
         })
-        data.save((err, data) => {
-            if (err) {
-                console.log('Could not save image data', err);
-            } else {
-                console.log('Image data has been saved.')
-            }
-        })
+        imageArray.push(data);
     }
+    data.collection.insertMany(imageArray, (err, data) => {
+        if (err) {
+            console.log('Could not save image data', err);
+        } else {
+            console.log('Image data has been saved.')
+        }
+    })
 };
 
-loadListingCollection();
+// loadListingCollection();
 loadImageCollection();
