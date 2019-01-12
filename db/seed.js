@@ -24,58 +24,56 @@ const sampleStaticData = ['file:///Users/helenjsoh/Desktop/HS-images/CarouselPic
 'file:///Users/helenjsoh/Desktop/HS-images/CarouselPics/19.jpeg',
 'file:///Users/helenjsoh/Desktop/HS-images/CarouselPics/20.jpeg']
 
-let listingData = [];
-let imageData = [];
-
 let creationCounter = 0; 
 let adderNum = 62500;
 let max = 62500;
-let imageMax = 1000;
-// This fn will create 100 listing objs with an arr of 8-10 image objs
-// const createMockData = () => {
-//     listingData = [];
-//     imageData = [];
-//     This loop will create 100 listing objs
-//     console.log('the counter and max are: ', creationCounter, max)
-//     for (var i = creationCounter; i < max; i++) {
-//         let id = i;
-//         // This loop will generate 8-10 images objs for ea listing
-//         let randomNum = Math.floor(Math.random() * 3) + 8;
-//         let listing = {
-//             id: id,
-//             count: randomNum
-//         }
-//         listingData.push(listing);
-//     }
-//     for(let i = 0; i < imageMax; i++){
-//         let url = sampleStaticData[Math.floor(Math.random() * Math.floor(20))];
-//         let caption = faker.lorem.sentence();
-//         let imageObj = {
-//             // Listing_id points to the listing it belongs to
-//             listing_id: i,
-//             image_url: url,
-//             image_caption: caption,
-//         }
-//         imageData.push(imageObj);
-//     }
-// };
-// createMockData(creationCounter, max);
+let imgCount = Math.floor(Math.random() * 3) + 8;
 
+let imagesCreator = (maxNum) => {
+    let imagesArray = [];
+    for(let i = 0; i < 1000; i++){
+        let imageSet = []
+        for(let j = 0; j < maxNum; j++){
+            let url = sampleStaticData[Math.floor(Math.random() * Math.floor(20))];
+            let caption = faker.lorem.sentence();
+            image = {
+                image_url: url,
+                image_caption: caption
+            }
+            imageSet.push(image);
+            //Set up some check that only adds to the image into the array if the same url doesn't already exist
+            // if(imageSet.length === 0){
+            //     imageSet.push(image);
+            // } else {
+            //     for(let q = 0; q < imageSet.length; q++){
+            //         if(imageSet[q].image_url === image.image_url){
+            //             console.log(j);
+            //             j--;
+            //             console.log(j);
+            //             imageSet.pop();
+            //         } 
+            //     }
+            // }
+        }
+        imagesArray.push(imageSet);
+    }
+    return imagesArray;
+}
+let imagePool = imagesCreator(imgCount);
 
-// Run this function once to load the mockData into mongoDB.
 const loadListingCollection = () => {
     let listingArray = [];
     let data;
 
     let adder = () => {
         listingArray = [];
-        // This loop will create 100 listing objs
-        let randomNum = Math.floor(Math.random() * 3) + 8;
+
         console.log('the counter and max are: ', creationCounter, max)
         for (var i = creationCounter; i < max; i++) {
+            let randNum = Math.floor(Math.random() * 1000);
             data = new db.Listing({
                 id: i,
-                count: randomNum
+                images: imagePool[randNum]
             })
             listingArray.push(data);
             creationCounter++;
@@ -86,7 +84,6 @@ const loadListingCollection = () => {
             } else if(creationCounter < 10000000){
                 max += adderNum;
                 console.log('entered: ', creationCounter, ' data points so far!');
-                // createMockData();
                 adder();
             } else {
                 console.timeEnd('timer');
@@ -97,31 +94,5 @@ const loadListingCollection = () => {
     console.time('timer');
     adder();
 };
-const loadImageCollection = () => {
-    let imageArray = [];
-    let data;
-
-    for (var i = 0; i < imageMax; i++) {
-        // console.log(imageData[0].id)
-        let url = sampleStaticData[Math.floor(Math.random() * Math.floor(20))];
-        let caption = faker.lorem.sentence();
-        data = new db.Image({
-            id: i,
-            image_url: url,
-            image_caption: caption
-        })
-        imageArray.push(data);
-    }
-    console.time('imageSave')
-    data.collection.insertMany(imageArray, (err, data) => {
-        if (err) {
-            console.log('Could not save image data', err);
-        } else {
-            console.timeEnd('imageSave');
-            console.log('Image data has been saved.')
-        }
-    })
-};
 
 loadListingCollection();
-// loadImageCollection();

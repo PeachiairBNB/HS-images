@@ -28,7 +28,26 @@ const sampleStaticData = ['file:///Users/helenjsoh/Desktop/HS-images/CarouselPic
 let creationCounter = 0; 
 let adderNum = 150000;
 let max = 150000;
-let imageMax = 1000;
+let imgCount = Math.floor(Math.random() * 3) + 8;
+
+let imagesCreator = (maxNum) => {
+    let imagesArray = [];
+    for(let i = 0; i < 1000; i++){
+        let imageSet = []
+        for(let j = 0; j < maxNum; j++){
+            let url = sampleStaticData[Math.floor(Math.random() * Math.floor(20))];
+            let caption = faker.lorem.sentence();
+            image = {
+                image_url: url,
+                image_caption: caption
+            }
+            imageSet.push(image)
+        }
+        imagesArray.push(imageSet);
+    }
+    return imagesArray;
+}
+let imagePool = imagesCreator(imgCount);
 
 const connect = connection;
 connect.then(() => {
@@ -37,12 +56,12 @@ connect.then(() => {
 
     let adder = () => {
         listingArray = [];
-        let randomNum = Math.floor(Math.random() * 3) + 8;
         console.log('the counter and max are: ', creationCounter, max)
         for (var i = creationCounter; i < max; i++) {
+            let randNum = Math.floor(Math.random() * 1000);
             data = {
                 id: i,
-                count: randomNum
+                images: imagePool[randNum]
             }
             listingArray.push(data);
             creationCounter++;
@@ -55,7 +74,6 @@ connect.then(() => {
             } else if(creationCounter < 10000000){
                 max += adderNum;
                 console.log('entered: ', creationCounter, ' data points so far!');
-                // createMockData();
                 adder();
             } else {
                 console.timeEnd('timer');
@@ -65,32 +83,6 @@ connect.then(() => {
     }
     console.time('timer');
     adder();
-})
-.then(() => {
-    let imageArray = [];
-    let data;
-
-    for (var i = 0; i < imageMax; i++) {
-        let url = sampleStaticData[Math.floor(Math.random() * Math.floor(20))];
-        let caption = faker.lorem.sentence();
-        data = {
-            id: i,
-            image_url: url,
-            image_caption: caption
-        }
-        imageArray.push(data);
-    }
-    let db = client.db('helensMongoCarousel');
-    let imagesDB = db.collection('images');
-    console.time('imageSave')
-    imagesDB.insertMany(imageArray, (err, data) => {
-        if (err) {
-            console.log('Could not save image data', err);
-        } else {
-            console.timeEnd('imageSave');
-            console.log('Image data has been saved.')
-        }
-    })
 })
 .then(() => {
     console.log('Here we go!')

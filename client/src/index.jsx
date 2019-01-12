@@ -49,9 +49,9 @@ class App extends React.Component {
     let imagesNeeded = [];
 
     axios.get(`/api/pictures/${listingID}`).then(({ data }) => {
-      console.log('DID I RUN????????', data);
-      data.forEach(image => {
-        imagesNeeded.push(image.image_url.slice(55));
+      // console.log('DID I RUN????????', data);
+      data.forEach(listing => {
+        imagesNeeded.push(listing.image.image_url.slice(55));
       });
       this.setState({
         pictures: imagesNeeded

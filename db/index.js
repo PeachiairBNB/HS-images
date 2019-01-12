@@ -14,16 +14,15 @@ db.once("open", function() {
 
 var listingSchema = new mongoose.Schema({
   id: Number,
-  count: Number
+  images: Array
 });
 
-var imageSchema = new mongoose.Schema({
-  id: Number,
-  image_url: String,
-  image_caption: String
-});
+// var imageSchema = new mongoose.Schema({
+//   image_url: String,
+//   image_caption: String
+// });
 
 var Listing = mongoose.model("Listing", listingSchema);
-var Image = mongoose.model("Image", imageSchema);
+// var Image = mongoose.model("Image", imageSchema);
 
-module.exports = { Listing, Image };
+module.exports = { Listing };
