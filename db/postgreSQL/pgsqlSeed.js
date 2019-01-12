@@ -30,8 +30,8 @@ const sampleStaticData = ['file:///Users/helenjsoh/Desktop/HS-images/CarouselPic
 'file:///Users/helenjsoh/Desktop/HS-images/CarouselPics/20.jpeg']
 
 let creationCounter = 0; 
-let adderNum = 5000;
-let max = 5000;
+let adderNum = 1;
+let max = 1;
 let imgCount = Math.floor(Math.random() * 3) + 8;
 
 let imagesCreator = (maxNum) => {
@@ -47,7 +47,7 @@ let imagesCreator = (maxNum) => {
                 image_caption: caption
             }
             // imageObj[j] = image;
-            imageSet.push(image);
+            imageSet.push(JSON.stringify(image));
         }
         // imagesArray.push(imageObj);
         imagesArray.push(imageSet);
@@ -70,7 +70,7 @@ let creator = () => {
                     data = {
                         images: imagePool[randNum]
                     }
-                    listingArray.push(data);
+                    listingArray.push(data.images);
                     creationCounter++;
                 }
                 resolve();
@@ -78,15 +78,29 @@ let creator = () => {
         }
         let batchStorage = () => {
             return new Promise((resolve) => {
-                storageQuery = format('INSERT INTO imagespool (name, age) VALUES %L', listingArray);
-                // console.log(storageQuery.constructor === String);
-                //true
-                // pgsql.query(storageQuery);
+                for(let i = 0; i < listingArray.length; i++){
+                    let array = listingArray[i];
+                    console.log(array);
+                    storageQuery = format('INSERT INTO imagespool (images) VALUES %L', '{' + array + '}');
+                    console.log(storageQuery);
+                    // console.log(storageQuery.constructor === String);
+                    //true
+                    // pgsql.query(storageQuery);
+
+                    // const query = {
+                    //     text: 'INSERT INTO imagespool (images) VALUES($1)',
+                    //     values: listingArray[i],
+                    // }
+                    // pgsql.query(query)
+                    // .catch((err) => {
+                    //     console.log("THERE WAS AN ERROR: ", err)
+                    // })
+                }
                 resolve();
             })
         }
         let checker = () => {
-            if(creationCounter < 300000){
+            if(creationCounter < 2){
                 max += adderNum;
                 console.log('entered: ', creationCounter, ' data points so far!');
                 adder();
