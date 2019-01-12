@@ -1,5 +1,7 @@
 const pg = require('pg');
-var faker = require('faker');
+const faker = require('faker');
+const format = require('pg-format');
+const Promise = require('promise')
 const connection = process.env.DATABASE_URL || 'postgres://localhost:5432/sdc';
 const pgsql = new pg.Client(connection);
 pgsql.connect();
@@ -28,8 +30,8 @@ const sampleStaticData = ['file:///Users/helenjsoh/Desktop/HS-images/CarouselPic
 'file:///Users/helenjsoh/Desktop/HS-images/CarouselPics/20.jpeg']
 
 let creationCounter = 0; 
-let adderNum = 150000;
-let max = 150000;
+let adderNum = 5000;
+let max = 5000;
 let imgCount = Math.floor(Math.random() * 3) + 8;
 
 let imagesCreator = (maxNum) => {
@@ -54,38 +56,36 @@ let imagesCreator = (maxNum) => {
 }
 let imagePool = imagesCreator(imgCount);
 
-let creator = async () => {
+let creator = () => {
     let listingArray = [];
     let data;
 
     let adder = () => {
         listingArray = [];
-        // console.log('the counter and max are: ', creationCounter, max)
-        let batchCreator = async (storageArray) => {
-            for (var i = creationCounter; i < max; i++) {
-                let randNum = Math.floor(Math.random() * 1000);
-                data = {
-                    images: imagePool[randNum]
+        console.log('the counter and max are: ', creationCounter, max)
+        let batchCreator = () => {
+            return new Promise((resolve) => {
+                for (var i = creationCounter; i < max; i++) {
+                    let randNum = Math.floor(Math.random() * 1000);
+                    data = {
+                        images: imagePool[randNum]
+                    }
+                    listingArray.push(data);
+                    creationCounter++;
                 }
-                let query = {
-                    text: `INSERT INTO imagespool (images) VALUES ($1)`,
-                    values: [data.images]
-                }
-                storageArray.push(query);
-                creationCounter++;
-            }
-            console.log('BATCH CREATED!', storageArray.length)
+                resolve();
+            });
         }
-        let batchStorage = async (storageArray) => {
-            console.log('STORING BATCH SIZE: ', storageArray.length);
-            for(let j = 0; j < storageArray.length; j++){
-                pgsql.query(storageArray[j])
-                .catch((err) => {
-                    console.log("THERE WAS AN ERROR!!", err)
-                })
-            }
+        let batchStorage = () => {
+            return new Promise((resolve) => {
+                storageQuery = format('INSERT INTO imagespool (name, age) VALUES %L', listingArray);
+                // console.log(storageQuery.constructor === String);
+                //true
+                // pgsql.query(storageQuery);
+                resolve();
+            })
         }
-        let checker = async () => {
+        let checker = () => {
             if(creationCounter < 300000){
                 max += adderNum;
                 console.log('entered: ', creationCounter, ' data points so far!');
@@ -95,9 +95,14 @@ let creator = async () => {
                 console.log('stopping');
             }
         }
+
         batchCreator(listingArray)
-        batchStorage(listingArray);
-        checker();
+        .then(() => {
+            batchStorage();
+        })
+        .then(() => {
+            checker();
+        })
     }
     console.time('timer');
     adder();
@@ -107,6 +112,11 @@ creator();
 
 
 
+//let query = {
+    //     text: `INSERT INTO imagespool (images) VALUES ($1)`,
+    //     values: [data.images]
+    // }
+    // storageArray.push(query);
 
 
 
