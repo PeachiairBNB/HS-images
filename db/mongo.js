@@ -60,7 +60,7 @@ connect.then(() => {
         for (var i = creationCounter; i < max; i++) {
             let randNum = Math.floor(Math.random() * 1000);
             data = {
-                id: i,
+                _id: i,
                 images: imagePool[randNum]
             }
             listingArray.push(data);
